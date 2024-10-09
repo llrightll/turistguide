@@ -1,8 +1,13 @@
 import streamlit as st
 import datetime
+from dotenv import load_dotenv
 from openai import OpenAI
-#client = OpenAI(api_key=userdata.get('OPENAI_API_KEY'))
-client = OpenAI(api_key="123")
+from newsapi import NewsApiClient
+import os
+
+load_dotenv()
+client = OpenAI(api_key = os.getenv("API_KEY"))
+newsapi = NewsApiClient(api_key = os.getenv("NEWS_API_KEY"))
 
 def kall_guide():
     
@@ -16,9 +21,17 @@ def kall_guide():
     )
     st.write(completion.choices[0].message.content)
 
+
+def get_news():
+    startdag = datetime.datetime.now() + datetime.timedelta(days=-10)
+    all_articles = newsapi.get_everything(q='oslo', from_param=startdag)
+    #st.write(all_articles)
+
 st.title("Oslo turist guide")
 
 st.write("Hei, hva kan jeg hjelpe med?")
+
+get_news()
 
 today = datetime.datetime.now()
 day4 = today + datetime.timedelta(days=4)
@@ -41,5 +54,3 @@ prompt = st.text_input("Hva er din interesse?")
 
 if st.button("Guide me"):
     kall_guide()
-
-#endring
