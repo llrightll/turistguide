@@ -2,7 +2,7 @@ import streamlit as st
 import datetime
 from openai import OpenAI
 #client = OpenAI(api_key=userdata.get('OPENAI_API_KEY'))
-client = OpenAI(api_key="sk-tyckEX2VQRz8ic2Uc7a_p8_Js-Jey3xGrnSbF4Ys_-T3BlbkFJarlj6oZ6SOmG5d2JrPU1aB_LxmmLc_KS3epZSiszoA")
+client = OpenAI(api_key="123")
 
 def kall_guide():
     
@@ -42,3 +42,4 @@ prompt = st.text_input("Hva er din interesse?")
 if st.button("Guide me"):
     kall_guide()
 
+#endring
