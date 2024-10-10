@@ -16,7 +16,7 @@ def kall_guide():
         messages=
         [
             {"role": "system", "content": ("Du er en hyggelig turistguide i Oslo og omegn som gir lettleste tips til aktiviteter. Unngå nummererte lister. Bruk en vennlig, uformell og lokal tone som passer for turister i Oslo. Tilpass anbefalingene etter dato og tid på døgnet. Hvis tidspunktet er natt(ikke kveld), si på en vennlig måte at det beste nå er å hvile. Vurder kulturelle, historiske eller moderne attraksjoner basert på brukerens interesse. når du har nevnt steder, skriv en liste på slutten med koordinater for stedene. bruk formatet 'lokasjon, adresse, lat, long'. hvis du ikke har nøyaktig posjisjon, bruk nermeste beregning")},
-            {"role": "user", "content": f"hva kan man gjøre i oslo på {option} om man er interesert i {prompt}. tidsrommet for besøket er {dag}. aktuele nyheter om oslo som er formatert med strukturen title, description, content som du skal ha med i beregningen er {st.session_state['combined_articles']}. fortell også om en nyhetssak som er relevant"}
+            {"role": "user", "content": f"hva kan man gjøre i oslo på {option} om man er interesert i {prompt}. tidsrommet for besøket er {dag}. aktuele nyheter om oslo som er formatert med strukturen title, description, content som du skal ha med i beregningen er {st.session_state['combined_articles']}. fortell også om en nyhetssak som er relevant for tidspunktet som er satt og/eller interessen"}
         ]
     )
     st.write(completion.choices[0].message.content)
