@@ -14,6 +14,42 @@ client = OpenAI(api_key = os.getenv("API_KEY"))
 newsapi = NewsApiClient(api_key = os.getenv("NEWS_API_KEY"))
 openweatherkey = os.getenv("OPEN_WEATHER_API")
 
+def create_prompts_table():
+    conn = sqlite3.connect('mydatabase.db')
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS prompts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            date_time TEXT,
+            prompt TEXT,
+            model TEXT,
+            natur INTEGER,
+            byliv INTEGER,
+            shopping INTEGER,
+            weather TEXT,
+            output TEXT
+        )
+    ''')
+
+    conn.commit()
+    conn.close()
+
+create_prompts_table()
+
+def save_prompt_data(prompt, model, natur, byliv, shopping, weather_data, output):
+    conn = sqlite3.connect('mydatabase.db')
+    cursor = conn.cursor()
+
+    # Insert the prompt data into the 'prompts' table
+    cursor.execute('''
+        INSERT INTO prompts (date_time, prompt, model, natur, byliv, shopping, weather, output)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (datetime.datetime.now(), prompt, model, natur, byliv, shopping, str(weather_data), output))
+
+    conn.commit()
+    conn.close()
+
 def kall_guide(modell, natur, byliv, shopping, weather_data):
     
     completion = client.chat.completions.create(
@@ -35,6 +71,8 @@ def kall_guide(modell, natur, byliv, shopping, weather_data):
     )
     response_content = completion.choices[0].message.content
     st.write(response_content)
+
+    save_prompt_data(prompt, modell, natur, byliv, shopping, weather_data, response_content)
 
     # Extract coordinates from the response content
     coordinates = extract_coordinates(koordinater.choices[0].message.content)
@@ -193,3 +231,29 @@ if st.sidebar.button("Show Database Contents"):
 
 st.sidebar.image("Image.png")
 
+def fetch_prompt_data():
+    conn = sqlite3.connect('mydatabase.db')
+    cursor = conn.cursor()
+
+    # Select all data from the prompts table
+    cursor.execute("SELECT date_time, prompt, model, natur, byliv, shopping, weather, output FROM prompts")
+    prompts = cursor.fetchall()
+
+    conn.close()
+
+    return prompts
+
+
+if st.sidebar.button("Show Prompt History"):
+    prompts = fetch_prompt_data()
+    if prompts:
+        for prompt_data in prompts:
+            st.sidebar.write(f"Date: {prompt_data[0]}")
+            st.sidebar.write(f"Prompt: {prompt_data[1]}")
+            st.sidebar.write(f"Model: {prompt_data[2]}")
+            st.sidebar.write(f"Natur: {prompt_data[3]}")
+            st.sidebar.write(f"Byliv: {prompt_data[4]}")
+            st.sidebar.write(f"Shopping: {prompt_data[5]}")
+            st.sidebar.write(f"Weather: {prompt_data[6]}")
+            st.sidebar.write(f"Output: {prompt_data[7]}")
+            st.sidebar.write("-" * 50)
