@@ -7,19 +7,21 @@ import os
 import sqlite3
 import pandas as pd
 import re
+import requests
 
 load_dotenv()
 client = OpenAI(api_key = os.getenv("API_KEY"))
 newsapi = NewsApiClient(api_key = os.getenv("NEWS_API_KEY"))
+openweatherkey = os.getenv("OPEN_WEATHER_API")
 
-def kall_guide(modell, natur, byliv, shopping):
+def kall_guide(modell, natur, byliv, shopping, weather_data):
     
     completion = client.chat.completions.create(
         model=modell,
         messages=
         [
             {"role": "system", "content": ("Du er en hyggelig turistguide i Oslo og omegn som gir lettleste tips til aktiviteter. Unngå nummererte lister. Bruk en vennlig, uformell og lokal tone som passer for turister i Oslo. Tilpass anbefalingene etter dato og tid på døgnet. Hvis tidspunktet er natt(ikke kveld), si på en vennlig måte at det beste nå er å hvile. Vurder kulturelle, historiske eller moderne attraksjoner basert på brukerens interesse.")},
-            {"role": "user", "content": f"hva kan man gjøre i oslo på {option} om man er interesert i {prompt}. tidsrommet for besøket er {dag}. på en skala fra 0-3 er det {natur}interesse for natur,{byliv} interesse for byliv, {shopping} interesse for shopping. aktuele nyheter om oslo som er formatert med strukturen title, description, content som du skal ha med i beregningen er {st.session_state['combined_articles']}. fortell også om en nyhetssak som er relevant for tidspunktet som er satt og/eller interessen. Vennligst unngå å nevne Nobelprisen med mindre brukerens interesse er knyttet til det. unngå nummererte lister "}
+            {"role": "user", "content": f"hva kan man gjøre i oslo på {option} om man er interesert i {prompt}. tidsrommet for besøket er {dag}. på en skala fra 0-3 er det {natur}interesse for natur,{byliv} interesse for byliv, {shopping} interesse for shopping. aktuele nyheter om oslo som er formatert med strukturen title, description, content som du skal ha med i beregningen er {st.session_state['combined_articles']}. fortell også om en nyhetssak som er relevant for tidspunktet som er satt og/eller interessen. Vennligst unngå å nevne Nobelprisen med mindre brukerens interesse er knyttet til det. unngå nummererte lister. bruk informasjon om været: {weather_data} "}
         ]
     )
 
@@ -121,8 +123,20 @@ def fetch_news_from_db():
 
 if 'combined_articles' not in st.session_state: 
     fetch_news_from_db()
-    
-#st.write(st.session_state['combined_articles'])
+
+base_url = "https://api.openweathermap.org/data/2.5/weather"
+city = "oslo"
+params = {
+    'q': city,
+    'appid': openweatherkey,
+    'units': 'metric',
+    'exclude': 'hourly,minutely'
+}
+
+
+wresponse = requests.get(base_url, params=params)
+weather_data = wresponse.json()
+#st.json(weather_data) 
 
 st.title("Oslo turist guide")
 st.write("Hei, hva kan jeg hjelpe med?")
@@ -167,7 +181,7 @@ shopping = st.sidebar.slider(
 )
 
 if st.button("Guide me"):
-    kall_guide(modell, natur, byliv, shopping)
+    kall_guide(modell, natur, byliv, shopping, weather_data)
 
 if st.sidebar.button("hent nyheter"):
     get_news()
@@ -175,6 +189,7 @@ if st.sidebar.button("hent nyheter"):
 if st.sidebar.button("Show Database Contents"):
     st.sidebar.write(st.session_state['combined_articles'])
 
-thumbs = st.feedback("thumbs")
+#thumbs = st.feedback("thumbs")
 
 st.sidebar.image("Image.png")
+
